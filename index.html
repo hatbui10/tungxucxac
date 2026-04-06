@@ -3,66 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xúc Xắc Nảy - Chữ Luôn Đúng Chiều (Fix Lộn)</title>
+    <title>Xúc Xắc 3D - Chữ Luôn Thẳng Đứng</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1a1a1a;
-            margin: 0;
-            perspective: 1500px;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; min-height: 100vh; background-color: #1a1a1a;
+            margin: 0; perspective: 1500px; overflow: hidden; font-family: Arial, sans-serif;
         }
-
-        .dice-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 60px;
-            width: 90%;
+        .dice-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 60px; width: 90%; }
+        .dice-wrapper { position: relative; width: 100px; height: 100px; transform-style: preserve-3d; }
+        .cube { 
+            width: 100px; height: 100px; position: absolute; transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .dice-wrapper {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            transform-style: preserve-3d;
-        }
-
-        .cube {
-            width: 100px;
-            height: 100px;
-            position: absolute;
-            transform-style: preserve-3d;
-        }
-
         .face {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 50px;
-            font-weight: bold;
-            color: white;
-            border: 2px solid rgba(255,255,255,0.6);
-            border-radius: 15px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+            position: absolute; width: 100px; height: 100px; display: flex;
+            justify-content: center; align-items: center; font-size: 50px;
+            font-weight: bold; color: white; border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 15px; box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
             backface-visibility: hidden;
         }
-
-        /* Thẻ span để điều khiển hướng chữ độc lập với khối hộp */
-        .face span {
-            display: inline-block;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        /* Các mặt ABCDEF */
         .front  { transform: rotateY(0deg) translateZ(50px); background: #e74c3c; }
         .back   { transform: rotateY(180deg) translateZ(50px); background: #2ecc71; }
         .right  { transform: rotateY(90deg) translateZ(50px); background: #9b59b6; }
@@ -71,30 +31,15 @@
         .bottom { transform: rotateX(-90deg) translateZ(50px); background: #e67e22; }
 
         .shadow {
-            width: 80px;
-            height: 10px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 50%;
-            position: absolute;
-            bottom: -30px;
-            left: 10px;
-            filter: blur(6px);
+            width: 80px; height: 10px; background: rgba(0,0,0,0.5);
+            border-radius: 50%; position: absolute; bottom: -30px;
+            left: 10px; filter: blur(6px); transition: opacity 0.2s;
         }
-
         button {
-            margin-top: 100px;
-            padding: 15px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 50px;
-            border: none;
-            background: #fff;
-            color: #333;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            transition: 0.2s;
+            margin-top: 100px; padding: 15px 40px; font-size: 20px;
+            font-weight: bold; cursor: pointer; border-radius: 50px;
+            border: none; background: #fff; color: #333; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
-        button:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
@@ -105,21 +50,20 @@
     <script>
         const grid = document.getElementById('grid');
         const dices = [];
+        // Danh sách 6 hướng xoay cố định để mặt luôn thẳng đứng
+        const safeRotations = [
+            {x: 0, y: 0},    // Mặt A
+            {x: 0, y: 180},  // Mặt B
+            {x: 0, y: -90},  // Mặt C
+            {x: 0, y: 90},   // Mặt D
+            {x: -90, y: 0},  // Mặt E
+            {x: 90, y: 0}    // Mặt F
+        ];
 
-        // Tạo 6 khối hộp với thẻ span bên trong mặt
         for (let i = 0; i < 6; i++) {
             const wrapper = document.createElement('div');
             wrapper.className = 'dice-wrapper';
-            wrapper.innerHTML = `
-                <div class="cube">
-                    <div class="face front"><span>A</span></div>
-                    <div class="face back"><span>B</span></div>
-                    <div class="face right"><span>C</span></div>
-                    <div class="face left"><span>D</span></div>
-                    <div class="face top"><span>E</span></div>
-                    <div class="face bottom"><span>F</span></div>
-                </div>
-                <div class="shadow"></div>`;
+            wrapper.innerHTML = `<div class="cube"><div class="face front">A</div><div class="face back">B</div><div class="face right">C</div><div class="face left">D</div><div class="face top">E</div><div class="face bottom">F</div></div><div class="shadow"></div>`;
             grid.appendChild(wrapper);
             dices.push({
                 el: wrapper.querySelector('.cube'),
@@ -133,41 +77,26 @@
             dices.forEach(d => {
                 if (!d.rolling) return;
                 
-                d.vy += 0.8; // Trọng lực
+                d.vy += 0.8; 
                 d.y += d.vy;
                 d.rx += d.rvx; d.ry += d.rvy; d.rz += d.rvz;
 
                 if (d.y >= 0) {
                     d.y = 0;
-                    d.vy *= -0.5; // Độ nảy
+                    d.vy *= -0.5; 
                     d.rvx *= 0.7; d.rvy *= 0.7; d.rvz *= 0.7;
 
                     if (Math.abs(d.vy) < 1.5) {
                         d.rolling = false;
+                        d.y = 0; d.vy = 0;
                         
-                        // 1. Khóa góc khối hộp về bội số 90
-                        d.rx = Math.round(d.rx / 90) * 90;
-                        d.ry = Math.round(d.ry / 90) * 90;
+                        // CHỌN MẶT NGẪU NHIÊN VÀ ÉP THẲNG HÀNG
+                        const result = safeRotations[Math.floor(Math.random() * safeRotations.length)];
+                        d.rx = result.x;
+                        d.ry = result.y;
                         d.rz = 0; 
-
-                        // 2. Logic sửa hướng chữ:
-                        const spans = d.el.querySelectorAll('.face span');
-                        // Chuẩn hóa góc về 0-360 để dễ tính toán
-                        const normRX = ((d.rx % 360) + 360) % 360;
-                        const normRY = ((d.ry % 360) + 360) % 360;
-
-                        spans.forEach(span => {
-                            // Reset về mặc định
-                            span.style.transform = "rotate(0deg)";
-                            
-                            // Nếu mặt sau lộ ra (Y=180) hoặc lật Top/Bottom (X=90/270), 
-                            // chữ thường bị ngược Ǝ, Ⅎ... Ta xoay 180 độ để sửa lại.
-                            if (normRY === 180 || normRX === 90 || normRX === 270) {
-                                span.style.transform = "rotate(180deg)";
-                            }
-                        });
-
-                        d.el.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                        
+                        d.el.style.transition = "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
                     }
                 }
                 render(d);
@@ -185,9 +114,6 @@
 
         function toss() {
             dices.forEach(d => {
-                // Reset hướng chữ về 0 trước khi tung mới để tránh lỗi quay ngược giữa chừng
-                d.el.querySelectorAll('span').forEach(s => s.style.transform = "rotate(0deg)");
-                
                 d.el.style.transition = "none";
                 d.rolling = true;
                 d.vy = -(Math.random() * 15 + 20);
@@ -197,8 +123,6 @@
             });
             update();
         }
-
-        // Tự động tung lần đầu
         toss();
     </script>
 </body>
